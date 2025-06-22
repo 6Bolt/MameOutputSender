@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net9.0-windows10.0.26100.0</TargetFramework>
+    <TargetFramework>net8.0-windows10.0.26100.0</TargetFramework>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <OutputType>WinExe</OutputType>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -12,6 +12,8 @@
     <StartupObject></StartupObject>
     <NuGetAuditMode>direct</NuGetAuditMode>
     <NoWin32Manifest>true</NoWin32Manifest>
+    <ApplicationIcon>hOTRIcon48.ico</ApplicationIcon>
+    <PackageIcon>hOTRIcon128.png</PackageIcon>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebugType>none</DebugType>
@@ -25,6 +27,15 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <DebugType>none</DebugType>
   </PropertyGroup>
+  <ItemGroup>
+    <Content Include="hOTRIcon48.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\Darren\Pictures\HookOfTheReaper\Icon\newIcon\hOTRIcon128.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
