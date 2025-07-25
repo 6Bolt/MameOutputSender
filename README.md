@@ -7,6 +7,6 @@ Simply replace the 'MameOutputSender.exe' in nixxou's 3 light gun emulators. The
 ### Dolphin Emulator (Wii/GameCube)
 To enable the MameOutputSender in the Dolphin, go to the 'Settings', by mouse clicking the 'Config' icon. It will bring up a new 'Settings' window, on the 'General' tab. Then check the 5th check box, in the 'Basic Settings', labeled 'Enable MameHooker Outputs'. That is it, and ready for the Dolphin Emulator.
 
-### Duck Station (PS1)
+### Duck Station Emulator (PS1)
 
-To enable the MameOutputSender in the Duck Station. Click on 'Settings', and then click on the second option, which is 'General'. This will bring up another window. In the top section called 'Behavoir', click on the 'Enable Mame Hooker', so there is a check mark next to it, in the box. Then you can close the child window, by clicking the close button on the bottom right. That is it.   
+To enable the MameOutputSender in the Duck Station, click on 'Settings', and then click on the second option, which is 'General'. This will bring up another window. In the top section called 'Behavoir', click on the 'Enable Mame Hooker', so there is a check mark next to it, in the box. Then you can close the child window, by clicking the 'Close' button on the bottom right. That is it.   
