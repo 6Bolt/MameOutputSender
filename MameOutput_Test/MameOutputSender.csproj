@@ -4,7 +4,7 @@
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <OutputType>WinExe</OutputType>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <UseWindowsForms>true</UseWindowsForms>
+    <UseWindowsForms>True</UseWindowsForms>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
     <Platforms>AnyCPU;x64</Platforms>
   </PropertyGroup>
@@ -14,18 +14,28 @@
     <NoWin32Manifest>true</NoWin32Manifest>
     <ApplicationIcon>hOTRIcon48.ico</ApplicationIcon>
     <PackageIcon>hOTRIcon128.png</PackageIcon>
+    <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
+    <PackAsTool>False</PackAsTool>
+    <AssemblyVersion>1.1</AssemblyVersion>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <UseWPF>False</UseWPF>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DebugType>none</DebugType>
+    <IsPublishable>True</IsPublishable>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <DebugType>none</DebugType>
+    <IsPublishable>True</IsPublishable>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DebugType>none</DebugType>
+    <IsPublishable>True</IsPublishable>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <DebugType>none</DebugType>
+    <IsPublishable>True</IsPublishable>
   </PropertyGroup>
   <ItemGroup>
     <Content Include="hOTRIcon48.ico" />
@@ -39,5 +49,18 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Properties\Settings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
   </ItemGroup>
 </Project>

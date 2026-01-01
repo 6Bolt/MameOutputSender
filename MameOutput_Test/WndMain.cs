@@ -633,9 +633,41 @@ namespace MameOutput_Test
             byte[] bytesToSend = Encoding.ASCII.GetBytes(gameStop);
             stream.Write(bytesToSend, 0, bytesToSend.Length);
 
-            //Then Close TCP Connection to HOTR & Stop listening
-            client.Close();
-            
+			try
+			{
+				//Close Stream
+				stream.Close();
+
+				// Get the underlying Socket
+				Socket clientSocket = client.Client;
+
+                // Initiate a graceful shutdown of the send/receive channels
+                if (clientSocket.Connected)
+				{
+					clientSocket.Shutdown(SocketShutdown.Both);
+				}
+
+                // Close the socket and release resources
+                clientSocket.Close();
+
+                //Then Close TCP Connection to HOTR & Stop listening
+                client.Close();
+			}
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error closing TCP connection to HOTR: {ex.Message}");
+            }
+            finally
+            {
+                // Dispose of the TcpClient instance
+                client.Dispose();
+            }
+
+            // Stop TCPListener listening
+            listener.Stop();
+
+            // Dispose of the TcpListener instance
+            listener.Dispose();
 
             Stop();
 			Application.Exit();
