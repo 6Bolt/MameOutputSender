@@ -15,6 +15,9 @@ using System.Threading.Tasks;
 using System.Reflection.Metadata;
 using System.Net;
 using System.Net.Sockets;
+using System.Collections.Generic;
+
+
 
 
 namespace MameOutput_Test
@@ -127,14 +130,19 @@ namespace MameOutput_Test
 		private static ContextMenuStrip contextMenu;
 		private System.Diagnostics.Process parentProcess = null;
 
-        //TCP Server Varibles
-        private TcpListener listener;
-		private TcpClient client;
-		private NetworkStream stream;
+		//TCP Server Varibles
+		//private TcpListener listener;
+		//private TcpClient client;
+		//private NetworkStream stream;
+		//private bool isTCPConnected;
+		//private bool sentMameStart;
+
+		//New A-Sync TCP Server that Allows 2 Connections
+		private MultiTCPServer multiTCPServer;
 
         public WndMain(string gameName, List<string> outputsList)
 		{
-			InitializeComponent();
+            InitializeComponent();
 
             //Set TCP Port
             IPAddress ipAddress;
@@ -181,22 +189,29 @@ namespace MameOutput_Test
 				OutputsList.Add(output, (int)i);
 			}
 
-			//1ere étape : enregistrement des variables des messages systèmes personalisés
-			//_Mame_OnStartMsg = RegisterMameOutputMessage(MAME_START_STRING);
-			//_Mame_OnStopMsg = RegisterMameOutputMessage(MAME_STOP_STRING);
-			//_Mame_UpdateStateMsg = RegisterMameOutputMessage(MAME_UPDATE_STRING);
-			//_Mame_RegisterClientMsg = RegisterMameOutputMessage(MAME_REGISTER_STRING);
-			//_Mame_UnregisterClientMsg = RegisterMameOutputMessage(MAME_UNREGISTER_STRING);
-			//_Mame_GetIdStringMsg = RegisterMameOutputMessage(MAME_GETID_STRING);
+            //1ere étape : enregistrement des variables des messages systèmes personalisés
+            //_Mame_OnStartMsg = RegisterMameOutputMessage(MAME_START_STRING);
+            //_Mame_OnStopMsg = RegisterMameOutputMessage(MAME_STOP_STRING);
+            //_Mame_UpdateStateMsg = RegisterMameOutputMessage(MAME_UPDATE_STRING);
+            //_Mame_RegisterClientMsg = RegisterMameOutputMessage(MAME_REGISTER_STRING);
+            //_Mame_UnregisterClientMsg = RegisterMameOutputMessage(MAME_UNREGISTER_STRING);
+            //_Mame_GetIdStringMsg = RegisterMameOutputMessage(MAME_GETID_STRING);
 
+            /*
 			//Find HOTR Network Connection Before Starting Pipe Threads
-			try
+			isTCPConnected = false;
+			sentMameStart = false;
+
+            try
 			{
 				listener = new TcpListener(ipAddress, PORT); // Listen on 127.0.0.1 on port 8000
 				listener.Start(); // Start listening for connections
 
+				
+
 				//Wait for HOTR to Connect
 				client = listener.AcceptTcpClient(); // Accept a pending HOTR connection
+                                                       
 
 				//Start Network Data Stream
 				stream = client.GetStream();
@@ -210,21 +225,33 @@ namespace MameOutput_Test
 				listener.Stop(); // Stop listening
 			}
 
-			//Send Game Name (ROM name) to HOTR
-			string mameS = "mame_start = ";
-			string mameStart = mameS + GameName + "\n";
+			if (client.Connected)
+				isTCPConnected = true;
 
-            byte[] bytesToSend = Encoding.ASCII.GetBytes(mameStart);
-            stream.Write(bytesToSend, 0, bytesToSend.Length);
+			if (isTCPConnected)
+			{
+				//Send Game Name (ROM name) to HOTR
+				string mameS = "mame_start = ";
+				string mameStart = mameS + GameName + "\n";
+
+				byte[] bytesToSend = Encoding.ASCII.GetBytes(mameStart);
+				stream.Write(bytesToSend, 0, bytesToSend.Length);
+				sentMameStart = true;
+
+            }
+			*/
 
             //Send Outputs Name and its ID Number
             //foreach (GameOutput o in _Outputs)
             //{
-			//	string outputData = o.Name + " = " + o.Id.ToString() + "\n";
+            //	string outputData = o.Name + " = " + o.Id.ToString() + "\n";
             //    byte[] bytesToSendData = Encoding.ASCII.GetBytes(outputData);
             //    stream.Write(bytesToSendData, 0, bytesToSendData.Length);
             //}
 
+			//Start TCP Server and start the thread to Listen for 2 Connections
+            multiTCPServer = new MultiTCPServer(GameName);
+            multiTCPServer.StartAsync();
 
             receiverThreadControl = new Thread(RunReceiverControl);
 			receiverThreadControl.IsBackground = true;
@@ -628,6 +655,7 @@ namespace MameOutput_Test
 			}
 			receiverThreadGunD.Join();
 
+            /*
             //Stop Game in HOTR
             string gameStop = "mame_stop\n";
             byte[] bytesToSend = Encoding.ASCII.GetBytes(gameStop);
@@ -660,14 +688,18 @@ namespace MameOutput_Test
             finally
             {
                 // Dispose of the TcpClient instance
-                client.Dispose();
+                //client.Dispose();
             }
 
             // Stop TCPListener listening
             listener.Stop();
 
             // Dispose of the TcpListener instance
-            listener.Dispose();
+            //listener.Dispose();
+			*/
+
+			//Close TCP Server
+            multiTCPServer.Close();
 
             Stop();
 			Application.Exit();
@@ -845,36 +877,36 @@ namespace MameOutput_Test
 		/// <param name="Outputs">List of values to send</param>
 		public void SendValues(List<GameOutput> Outputs)
 		{
-			if (_FirstOutputs)
-			{
-				//MameHooker compatibility : Sending orientation once
-				Outputs.Insert(0, new GameOutput(MAME_ORIENTATION_STRING, MAME_ORIENTATION_ID));
-				Outputs[0].OutputValue = 0;
+            if (_FirstOutputs)
+            {
+                //MameHooker compatibility : Sending orientation once
+                Outputs.Insert(0, new GameOutput(MAME_ORIENTATION_STRING, MAME_ORIENTATION_ID));
+                Outputs[0].OutputValue = 0;
 
-				//Clonage de la liste des Outputs pour tester les differences de valeur.
-				_OutputsBefore = Outputs.ConvertAll(x => new GameOutput(x));
-				for (int i = 0; i < Outputs.Count; i++)
-				{
-					string message = Outputs[i].Name + " = " + Outputs[i].OutputValue.ToString() + "\n";
-					SendString(message);
+                //Clonage de la liste des Outputs pour tester les differences de valeur.
+                _OutputsBefore = Outputs.ConvertAll(x => new GameOutput(x));
+                for (int i = 0; i < Outputs.Count; i++)
+                {
+                    string message = Outputs[i].Name + " = " + Outputs[i].OutputValue.ToString() + "\n";
+                    SendString(message);
                     //SendValue(Outputs[i].Id, Outputs[i].OutputValue);
-				}
-				_FirstOutputs = false;
-			}
-			else
-			{
-				for (int i = 0; i < Outputs.Count; i++)
-				{
-					if (Outputs[i].OutputValue != _OutputsBefore[i].OutputValue)
-					{
+                }
+                _FirstOutputs = false;
+            }
+            else
+            {
+                for (int i = 0; i < Outputs.Count; i++)
+                {
+                    if (Outputs[i].OutputValue != _OutputsBefore[i].OutputValue)
+                    {
                         string message = Outputs[i].Name + " = " + Outputs[i].OutputValue.ToString() + "\n";
                         SendString(message);
                         //SendValue(Outputs[i].Id, Outputs[i].OutputValue);
-						_OutputsBefore[i].OutputValue = Outputs[i].OutputValue;
-					}
-				}
-			}
-		}
+                        _OutputsBefore[i].OutputValue = Outputs[i].OutputValue;
+                    }
+                }
+            }
+        }
 
 		/// <summary>
 		/// Envoie d'une valeur d'Output à tous les clients connectés
@@ -885,7 +917,7 @@ namespace MameOutput_Test
             string myValue = Value.ToString();
 			string dataReceived = myId + " = " + myValue;
             byte[] bytesToSend = Encoding.ASCII.GetBytes(dataReceived);
-            stream.Write(bytesToSend, 0, bytesToSend.Length);
+            //stream.Write(bytesToSend, 0, bytesToSend.Length);
 
 
             //foreach (OutputClient c in _RegisteredClients)
@@ -896,8 +928,9 @@ namespace MameOutput_Test
 
         public void SendString(string message)
 		{
-            byte[] bytesToSend = Encoding.ASCII.GetBytes(message);
-            stream.Write(bytesToSend, 0, bytesToSend.Length);
+			//Send Data to Connected TCP Clients
+			multiTCPServer.WriteData(message);
+
         }
 
 
@@ -946,6 +979,131 @@ namespace MameOutput_Test
 		}
 	}
 
+    public class MultiTCPServer
+    {
+        private const int PORTX = 8000;
+        private const string IPADDRESSSTRINGX = "127.0.0.1";
+
+        private readonly TcpListener server;
+
+        public static string gameName {  get; set; }
+		public static bool gameNameSet = false;
+
+		public static TcpClient client;
+		public static TcpClient client2;
+
+		public static NetworkStream stream;
+        public static NetworkStream stream2;
+
+        public static bool isConnected;
+        public static bool isConnected2;
+
+        private bool isRunning;
+
+
+        public MultiTCPServer(string gameN)
+		{
+			gameName = gameN;
+			gameNameSet = true;
+
+            IPAddress ipAddress;
+            IPAddress.TryParse(IPADDRESSSTRINGX, out ipAddress);
+
+            server = new TcpListener(ipAddress, PORTX);  
+        }
+
+        public async Task StartAsync()
+        {
+			isRunning = true;
+            isConnected = false;
+			isConnected2 = false;
+
+            server.Start();
+
+			//Thread that listens for new TCP Clients
+            while (isRunning)
+			{
+				client = await server.AcceptTcpClientAsync();
+
+				if (!isConnected)
+				{
+					stream = client.GetStream();
+					isConnected = true;
+
+                }
+				else if(!isConnected2)
+				{
+                    stream2 = client.GetStream();
+                    isConnected2 = true;
+
+                }
+
+                string mameS = "mame_start = ";
+                string mameStart = mameS + gameName + "\n";
+                byte[] bytesToSend = Encoding.ASCII.GetBytes(mameStart);
+
+                if (isConnected2)
+				{
+					await stream2.WriteAsync(bytesToSend, 0, bytesToSend.Length);
+                    isRunning = false;
+                }
+				else if(isConnected)
+				{
+                    await stream.WriteAsync(bytesToSend, 0, bytesToSend.Length);
+                }
+				
+            }
+        }
+
+		public void WriteData(string message)
+		{
+            byte[] bytesToSend = Encoding.ASCII.GetBytes(message);
+
+			if(isConnected && isConnected2)
+			{
+                stream.Write(bytesToSend, 0, bytesToSend.Length);
+                stream2.Write(bytesToSend, 0, bytesToSend.Length);
+            }
+			else if(isConnected)
+				stream.Write(bytesToSend, 0, bytesToSend.Length);
+
+        }
+
+		public void GameName(string gameN)
+		{
+			gameName = gameN;
+			gameNameSet = true;
+
+        }
+
+		public void Close()
+		{
+			if (isConnected)
+			{
+				string gameStop = "mame_stop\n";
+				byte[] bytesToSend = Encoding.ASCII.GetBytes(gameStop);
+				stream.Write(bytesToSend, 0, bytesToSend.Length);
+
+				if (isConnected2)
+				{
+                    stream2.Write(bytesToSend, 0, bytesToSend.Length);
+                }
+
+				//Stop While Loop if still Running
+				isRunning = false;
+				stream.Close();
+
+                if (isConnected2)
+                    stream2.Close();
+
+                client.Close();
+			}
+
+            server.Stop();
+
+        }
+
+    }
 
 
 }
