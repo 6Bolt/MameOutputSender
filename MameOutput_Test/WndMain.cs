@@ -1080,7 +1080,7 @@ namespace MameOutput_Test
 		{
 			if (isConnected)
 			{
-				string gameStop = "mame_stop\n";
+				string gameStop = "mame_stop = 0\n";
 				byte[] bytesToSend = Encoding.ASCII.GetBytes(gameStop);
 				stream.Write(bytesToSend, 0, bytesToSend.Length);
 
