@@ -1,7 +1,7 @@
 # MameOutputSender
 Converted nixxou's MameOutputSender from windows communication to network communication. This is to make it work with Hook Of The Reaper and LGTCPTester. Only one can connect to MameOutputSender, so don't use both at the same time. 
 
-Latest Version is v1.2, which makes the TCP Server A-Sync, and allows 2 TCP Clients. So now HOTR and LGTCPTester can both work with it.  
+Latest Version is v1.3, which fixed a bug with the 'mame_stop' signal.  
 
 ## Install
 Simply replace the 'MameOutputSender.exe' in nixxou's 3 light gun emulators. The program is in the main directory of the emulators. Alternatively, you can rename the 'MameOutputSender.exe' to something else, and then copy the new one into the directory. Please note, that the name cannot be changed, and has to be 'MameOutputSender.exe', as this is what the emulator looks for.
